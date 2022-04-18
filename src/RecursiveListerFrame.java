@@ -8,18 +8,29 @@ import java.nio.file.Files;
 public class RecursiveListerFrame extends JFrame
 {
     JPanel mainPanel;
+    JLabel guiLabel;
 
     JPanel controlPanel;
     JButton startButton;
     JButton quitButton;
 
+    JPanel displayPanel;
+    JLabel resultsLabel;
+    JTextArea resultsTextArea;
+    JScrollPane resultsTextScroll;
+
     public RecursiveListerFrame()
     {
         mainPanel = new JPanel();
         mainPanel.setLayout(new BorderLayout());
+        guiLabel = new JLabel("Found Files and Directories:");
+        mainPanel.add(guiLabel);
 
         createControlPanel();
         mainPanel.add(controlPanel, BorderLayout.NORTH);
+
+        createDisplayPanel();
+        mainPanel.add(displayPanel, BorderLayout.CENTER);
 
         add(mainPanel);
         setSize(1000,600);
@@ -40,6 +51,20 @@ public class RecursiveListerFrame extends JFrame
         controlPanel.add(startButton);
         controlPanel.add(quitButton);
     }
+
+    public void createDisplayPanel()
+    {
+        displayPanel = new JPanel();
+        resultsTextArea = new JTextArea(15,50);
+        resultsLabel = new JLabel("Found Files and Directories:");
+
+        resultsTextArea.setFont(new java.awt.Font("Serif", 0, 20));
+
+        resultsTextScroll = new JScrollPane(resultsTextArea);
+
+        displayPanel.add(resultsLabel);
+        displayPanel.add(resultsTextScroll);
+    }
     File chosenDirectory;
     public void chooseDirectory()
     {
@@ -52,23 +77,28 @@ public class RecursiveListerFrame extends JFrame
             if (directoryChooser.getSelectedFile().isDirectory()) {
                 chosenDirectory = directoryChooser.getSelectedFile();
             }
-            //System.out.println(chosenDirectory.getAbsolutePath());
-            displayFiles(chosenDirectory);
         }
+        displayFiles(chosenDirectory);
     }
 
     public void displayFiles(File directoryToSearch)
     {
-        String[] pathnames;
-        File tempDirectory;
-        pathnames = directoryToSearch.list();
-        for (String pathname : pathnames) {
-            tempDirectory = new File(directoryToSearch.getAbsolutePath() + "\\" + pathname);
-            if(tempDirectory.isDirectory())
-            {
-                displayFiles(tempDirectory);
+        if(directoryToSearch != null) { //make sure code isn't ran if user closes search without picking file
+            String[] pathnames;
+            File tempDirectory;
+            pathnames = directoryToSearch.list();
+            for (String pathname : pathnames) {
+                tempDirectory = new File(directoryToSearch.getAbsolutePath() + "\\" + pathname); //set a new File equal to current file being checked
+                if (tempDirectory.isDirectory()) //if the temp file is a directory
+                {
+                    resultsTextArea.setText(resultsTextArea.getText() + "Entering Subdirectory: " + tempDirectory.getAbsolutePath() + "\n"); //Show when a new directory is being checked
+                    displayFiles(tempDirectory); //recurse on the directory
+                }
+                else
+                {
+                    resultsTextArea.setText(resultsTextArea.getText() + "File: " + pathname + "\n"); //if the File isn't a directory, print the file path
+                }
             }
-            System.out.println(tempDirectory.getAbsolutePath());
         }
     }
 
